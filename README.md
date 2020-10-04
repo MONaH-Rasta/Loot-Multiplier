@@ -5,7 +5,7 @@ There are 4 types of lists:
 * `Containers list` - is the list of all containers. All new containers automaticly added into this list.
 * `Categories list` - is the list of all categories. All new categories automaticly added into this list.
 * `Items list` - is the list of items. You can edit this list as you want.
-* `Item|Category Blacklist` - is the list of items that will be skipped by this plugin. You can edit this list as you want.
+* `Item|Category Blacklist` - is the list of items and categories that will be skipped by this plugin. You can edit this list as you want.
 
 There are 3 multiplier types: Container, Category, Item. Consider that all them 3 will apply to item.
 Blacklist overrides all other settings, so if you add item or category to blacklist this plugin will ignore it.
