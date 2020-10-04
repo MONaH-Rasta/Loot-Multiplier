@@ -10,7 +10,7 @@ namespace Oxide.Plugins
     {
         #region Configuration
         
-        private static ConfigData configData;
+        private ConfigData configData;
         
         private class ConfigData
         {
@@ -155,77 +155,68 @@ namespace Oxide.Plugins
         {
             if (container == null) return;
 
-            var multiplier = 0;
-            var containerName = container.ShortPrefabName;
-            AddToList(containerName, "containerName");
+            var multiplier = GetContainerMultiplier(container.ShortPrefabName);
 
-            multiplier = configData.itemS.containers[containerName];
-
-            foreach (var item in container.inventory.itemList.ToArray())
+            foreach (var item in container.inventory.itemList)
             {
                 var shortname = item.info.shortname;
                 var category = item.info.category.ToString();
-                AddToList(category, "category");
 
                 if (configData.itemS.blacklist.Contains(shortname) || configData.itemS.blacklist.Contains(category))
                     continue;
+                
                 if (item.hasCondition && configData.globalS.multiplyItemsWithCondition == false)
                     continue;
 
-                var itemMultiplier = configData.itemS.categories[category];
+                int itemMultiplier = GetCategoryMultiplier(category);
                 if (configData.itemS.items.ContainsKey(shortname))
                 {
-                    itemMultiplier = itemMultiplier * configData.itemS.items[shortname];
+                    itemMultiplier *= configData.itemS.items[shortname];
                 }
 
-                item.amount *= (multiplier * itemMultiplier) > 1 ? (multiplier * itemMultiplier) : 1;
+                if (multiplier * itemMultiplier <= 1)
+                {
+                    continue;
+                }
+
+                item.amount *= multiplier * itemMultiplier;
             }
         }
 
         #endregion
 
         #region Helpers
-
-        private void AddToList(string listMember, string type)
+        private int GetContainerMultiplier(string containerName)
         {
-            if (string.IsNullOrEmpty(listMember)) return;
-
-            Dictionary<string, int> dictionary;
-            int defaultMultiplier;
-            if (type == "containerName")
+            if (configData.itemS.containers.ContainsKey(containerName))
             {
-                dictionary = configData.itemS.containers;
-                defaultMultiplier = configData.globalS.defaultContainerMultiplier;
+                return configData.itemS.containers[containerName];
             }
-            else if (type == "category")
-            {
-                dictionary = configData.itemS.categories;
-                defaultMultiplier = configData.globalS.defaultCategoryMultiplier;
-            }
-            else
-                return;
 
-            if (!dictionary.ContainsKey(listMember))
+            configData.itemS.containers[containerName] = configData.globalS.defaultContainerMultiplier;
+            configData.itemS.containers = SortDictionary(configData.itemS.containers);
+            SaveConfig();
+            return configData.globalS.defaultContainerMultiplier;
+        }
+        
+        private int GetCategoryMultiplier(string category)
+        {
+            if (configData.itemS.categories.ContainsKey(category))
             {
-                dictionary.Add(listMember, defaultMultiplier);
-                Dictionary<string, int> sorted = new Dictionary<string, int>();
-                foreach (KeyValuePair<string, int> element in dictionary.OrderBy(key => key.Key))
-                {
-                    sorted.Add(element.Key, element.Value);
-                }
-
-                if (type == "containerName")
-                {
-                    configData.itemS.containers = sorted;
-                    SaveConfig();
-                }
-                else if (type == "category")
-                {
-                    configData.itemS.categories = sorted;
-                    SaveConfig();
-                }
+                return configData.itemS.categories[category];
             }
-        } 
+
+            configData.itemS.categories[category] = configData.globalS.defaultCategoryMultiplier;
+            configData.itemS.categories = SortDictionary(configData.itemS.categories);
+            SaveConfig();
+            return configData.globalS.defaultContainerMultiplier;
+        }
+
+        private Dictionary<string, int> SortDictionary(Dictionary<string, int> dic)
+        {
+            return dic.OrderBy(key => key.Key)
+                .ToDictionary(key => key.Key, value => value.Value);
+        }
 
         #endregion Helpers
     }

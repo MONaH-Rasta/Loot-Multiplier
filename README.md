@@ -36,7 +36,7 @@ Also, if you will add, let's say Tech Trash to blacklist, it will have x1 multip
     "Multiply items with condition": false,
     "Delay after spawning container to multiply it": 1.0
   },
-  "Item settings": {
+  "Items and containers settings": {
     "Containers list (shortPrefabName: multiplier)": {
       "bradley_crate": 1,
       "codelockedhackablecrate": 1,
