@@ -2,22 +2,22 @@
 
 All multipliers set to 1 by default and has no impact, you can install plugin safely and then edit default config file to your needs.
 There are 4 types of lists:
-*`Containers list` - is the list of all containers. All new containers automaticly added into this list.
-*`Categories list` - is the list of all categories. All new categories automaticly added into this list.
-*`Items list` - is the list of items. You can edit this list as you want.
-*`Item|Category Blacklist` - is the list of items that will be skipped by this plugin. You can edit this list as you want.
+* `Containers list` - is the list of all containers. All new containers automaticly added into this list.
+* `Categories list` - is the list of all categories. All new categories automaticly added into this list.
+* `Items list` - is the list of items. You can edit this list as you want.
+* `Item|Category Blacklist` - is the list of items that will be skipped by this plugin. You can edit this list as you want.
 
 There are 3 multiplier types: Container, Category, Item. Consider that all them 3 will apply to item.
 Blacklist overrides all other settings, so if you add item or category to blacklist this plugin will ignore it.
 
 
-*`Example 1`: you want multiply only scrap in all containers x2.
+* `Example 1`: you want multiply only scrap in all containers x2.
 You need to add `"scrap": 2` to your items list and you're done.
 
-*`Example 2`: you want to multiply all loot in underwater crates x2 and heli crates x4.
+* `Example 2`: you want to multiply all loot in underwater crates x2 and heli crates x4.
 You need to set `"crate_underwater_advanced": 2`, `"crate_underwater_basic": 2` and `"heli_crate": 4`.
 
-*`Example 3`: you want to multiply all metal pipes x2, all elite crates loot x2, and all components x4.
+* `Example 3`: you want to multiply all metal pipes x2, all elite crates loot x2, and all components x4.
 You can't do exactly this one. First you set `"crate_elite": 2`, then `"Component": 2`.
 This way for all Components in all Elite Crates you will get x2 (Elite Crate multiplier) * x2 (Component multiplier) = x4.
 All components in other containers will have x2 multiplier.
