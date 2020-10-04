@@ -157,17 +157,7 @@ namespace Oxide.Plugins
 
             var multiplier = 0;
             var containerName = container.ShortPrefabName;
-            if (!configData.itemS.containers.ContainsKey(containerName))
-            {
-                configData.itemS.containers.Add(containerName, configData.globalS.defaultContainerMultiplier);
-                Dictionary<string, int> sorted = new Dictionary<string, int>();
-                foreach (KeyValuePair<string, int> cont in configData.itemS.containers.OrderBy(key => key.Key))
-                {
-                    sorted.Add(cont.Key, cont.Value);
-                }
-                configData.itemS.containers = sorted;
-                SaveConfig();
-            }
+            AddToList(containerName, "containerName");
 
             multiplier = configData.itemS.containers[containerName];
 
@@ -175,28 +165,12 @@ namespace Oxide.Plugins
             {
                 var shortname = item.info.shortname;
                 var category = item.info.category.ToString();
-
-                if (!configData.itemS.categories.ContainsKey(category))
-                {
-                    configData.itemS.categories.Add(category, configData.globalS.defaultCategoryMultiplier);;
-                    Dictionary<string, int> sorted = new Dictionary<string, int>();
-                    foreach (KeyValuePair<string, int> cont in configData.itemS.categories.OrderBy(key => key.Key))
-                    {
-                        sorted.Add(cont.Key, cont.Value);
-                    }
-                    configData.itemS.categories = sorted;
-                    SaveConfig();
-                }
+                AddToList(category, "category");
 
                 if (configData.itemS.blacklist.Contains(shortname) || configData.itemS.blacklist.Contains(category))
-                {
                     continue;
-                }
-                
                 if (item.hasCondition && configData.globalS.multiplyItemsWithCondition == false)
-                {
                     continue;
-                }
 
                 var itemMultiplier = configData.itemS.categories[category];
                 if (configData.itemS.items.ContainsKey(shortname))
@@ -204,11 +178,55 @@ namespace Oxide.Plugins
                     itemMultiplier = itemMultiplier * configData.itemS.items[shortname];
                 }
 
-                multiplier = multiplier * itemMultiplier;
-                item.amount *= (multiplier > 1 ? multiplier : 1);
+                item.amount *= (multiplier * itemMultiplier) > 1 ? (multiplier * itemMultiplier) : 1;
             }
         }
 
         #endregion
+
+        #region Helpers
+
+        private void AddToList(string listMember, string type)
+        {
+            if (string.IsNullOrEmpty(listMember)) return;
+
+            Dictionary<string, int> dictionary;
+            int defaultMultiplier;
+            if (type == "containerName")
+            {
+                dictionary = configData.itemS.containers;
+                defaultMultiplier = configData.globalS.defaultContainerMultiplier;
+            }
+            else if (type == "category")
+            {
+                dictionary = configData.itemS.categories;
+                defaultMultiplier = configData.globalS.defaultCategoryMultiplier;
+            }
+            else
+                return;
+
+            if (!dictionary.ContainsKey(listMember))
+            {
+                dictionary.Add(listMember, defaultMultiplier);
+                Dictionary<string, int> sorted = new Dictionary<string, int>();
+                foreach (KeyValuePair<string, int> element in dictionary.OrderBy(key => key.Key))
+                {
+                    sorted.Add(element.Key, element.Value);
+                }
+
+                if (type == "containerName")
+                {
+                    configData.itemS.containers = sorted;
+                    SaveConfig();
+                }
+                else if (type == "category")
+                {
+                    configData.itemS.categories = sorted;
+                    SaveConfig();
+                }
+            }
+        } 
+
+        #endregion Helpers
     }
 }
