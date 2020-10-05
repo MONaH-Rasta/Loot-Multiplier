@@ -4,20 +4,20 @@ using System.Linq;
 
 namespace Oxide.Plugins
 {
-    [Info("Loot Multiplier", "Orange", "1.2.0")]
+    [Info("Loot Multiplier", "Orange", "1.2.1")]
     [Description("Multiply items in all loot containers in the game")]
     public class LootMultiplier : RustPlugin
     {
         #region Configuration
-        
+
         private ConfigData configData;
-        
+
         private class ConfigData
         {
             [JsonProperty(PropertyName = "Global settings")]
             public GlobalSettings globalS = new GlobalSettings();
 
-            [JsonProperty(PropertyName = "Item settings")]
+            [JsonProperty(PropertyName = "Items and containers settings")]
             public ItemSettings itemS = new ItemSettings();
 
             public class GlobalSettings
@@ -146,7 +146,7 @@ namespace Oxide.Plugins
                 Multiply(container);
             });
         }
-        
+
         #endregion
 
         #region Core
@@ -155,7 +155,7 @@ namespace Oxide.Plugins
         {
             if (container == null) return;
 
-            var multiplier = GetContainerMultiplier(container.ShortPrefabName);
+            var containerMultiplier = GetContainerMultiplier(container.ShortPrefabName);
 
             foreach (var item in container.inventory.itemList)
             {
@@ -164,22 +164,23 @@ namespace Oxide.Plugins
 
                 if (configData.itemS.blacklist.Contains(shortname) || configData.itemS.blacklist.Contains(category))
                     continue;
-                
-                if (item.hasCondition && configData.globalS.multiplyItemsWithCondition == false)
+
+                if (configData.globalS.multiplyItemsWithCondition && item.hasCondition == false)
                     continue;
 
-                int itemMultiplier = GetCategoryMultiplier(category);
-                if (configData.itemS.items.ContainsKey(shortname))
+                int categoryMultiplier = GetCategoryMultiplier(category);
+                int itemMultiplier;
+                if (!configData.itemS.items.TryGetValue(shortname, out itemMultiplier))
                 {
-                    itemMultiplier *= configData.itemS.items[shortname];
+                    itemMultiplier = 1;
                 }
 
-                if (multiplier * itemMultiplier <= 1)
+                if (containerMultiplier * itemMultiplier * categoryMultiplier <= 1)
                 {
                     continue;
                 }
 
-                item.amount *= multiplier * itemMultiplier;
+                item.amount *= containerMultiplier * categoryMultiplier * itemMultiplier;
             }
         }
 
@@ -188,9 +189,10 @@ namespace Oxide.Plugins
         #region Helpers
         private int GetContainerMultiplier(string containerName)
         {
-            if (configData.itemS.containers.ContainsKey(containerName))
+            int multiplier;
+            if (configData.itemS.containers.TryGetValue(containerName, out multiplier))
             {
-                return configData.itemS.containers[containerName];
+                return multiplier;
             }
 
             configData.itemS.containers[containerName] = configData.globalS.defaultContainerMultiplier;
@@ -201,9 +203,10 @@ namespace Oxide.Plugins
         
         private int GetCategoryMultiplier(string category)
         {
-            if (configData.itemS.categories.ContainsKey(category))
+            int multiplier;
+            if (configData.itemS.categories.TryGetValue(category, out multiplier))
             {
-                return configData.itemS.categories[category];
+                return multiplier;
             }
 
             configData.itemS.categories[category] = configData.globalS.defaultCategoryMultiplier;
