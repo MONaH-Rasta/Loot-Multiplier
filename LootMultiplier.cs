@@ -175,7 +175,7 @@ namespace Oxide.Plugins
                     itemMultiplier = 1;
                 }
 
-                if (containerMultiplier * itemMultiplier * categoryMultiplier <= 1)
+                if (containerMultiplier * categoryMultiplier * itemMultiplier <= 1)
                 {
                     continue;
                 }
